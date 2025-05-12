@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube Solution Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Comfortaa', cursive; /* Use the fun font */
+            line-height: 1.6;
+            background-color: #2196F3; /* Vibrant blue background */
+            color: #333;
+            padding: 20px;
+            position: relative; /* Needed for absolute positioning of emoji overlay and footer text */
+            min-height: 100vh; /* Ensure body covers at least the full viewport height */
+            padding-bottom: 80px; /* Add padding at the bottom for the timeline and footer text */
+        }
+
+        /* Emoji Background Overlay */
+        .emoji-background {
+            position: fixed; /* Fixed position to cover the viewport */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks to pass through */
+            opacity: 0.1; /* Make emojis subtle */
+            z-index: -1; /* Place behind content */
+            overflow: hidden; /* Hide overflowing emojis */
+            line-height: 1.5; /* Adjust line height for emoji spacing */
+            font-size: 2em; /* Size of emojis */
+            white-space: pre-wrap; /* Allow wrapping and spaces */
+            word-break: break-all; /* Break words if necessary */
+            text-align: center; /* Center emojis */
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            position: relative; /* Ensure container is above the emoji background */
+            z-index: 1;
+        }
+        .step {
+            margin-bottom: 30px;
+            padding: 25px;
+            background-color: #E3F2FD;
+            border-radius: 10px;
+            border: 1px solid #90CAF9;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #1565C0;
+            border-bottom: 2px solid #1565C0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+         .step h4 {
+            color: #0D47A1;
+            margin-top: 15px;
+            margin-bottom: 10px;
+         }
+        .algorithm {
+            background-color: #BBDEFB;
+            /* Adjusted padding and added max-width */
+            padding: 8px 12px; /* Reduced padding */
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace; /* Keep algorithms readable */
+            overflow-x: auto;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border: 1px dashed #2196F3;
+            display: inline-block; /* Allow text to flow around */
+            max-width: 80%; /* Limit the maximum width */
+            vertical-align: top; /* Align to the top of the surrounding text line */
+        }
+        .tip {
+            background-color: #FFF9C4;
+            border-left: 5px solid #FBC02D;
+            padding: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .navigation {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .nav-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 15px;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .nav-button:hover:not(:disabled) {
+            background-color: #388E3C;
+        }
+        /* Basic responsive image styling */
+        .step img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #FF9800;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+         ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+         }
+         li {
+            margin-bottom: 5px;
+         }
+
+         /* Timeline styles */
+         .timeline {
+            position: fixed;
+            bottom: 40px; /* Position above the footer text */
+            left: 0;
+            width: 100%;
+            background-color: #0D47A1; /* Dark blue background for timeline */
+            padding: 10px 0;
+            text-align: center;
+            z-index: 10; /* Ensure timeline is on top */
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+         }
+
+         .timeline-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background-color: #BBDEFB; /* Light blue for inactive dots */
+            border-radius: 50%;
+            margin: 0 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer; /* Indicate dots are clickable */
+         }
+
+         .timeline-dot.active {
+            background-color: #FFEB3B; /* Yellow for the active dot */
+            transform: scale(1.3); /* Make active dot slightly larger */
+         }
+
+         /* Footer Text styles */
+         .footer-text {
+            position: fixed;
+            bottom: 0; /* Align to the very bottom */
+            left: 0;
+            width: 100%;
+            padding: 5px 0; /* Small padding */
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background */
+            color: rgba(255, 255, 255, 0.8); /* Semi-transparent white text */
+            text-align: center;
+            font-size: 0.8em; /* Small text size */
+            z-index: 11; /* Ensure it's above the timeline */
+         }
+    </style>
+</head>
+<body>
+
+    <div class="emoji-background">
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+         🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+         🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+         🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+        🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉 🧩 🔄 🟡 ⚪ 🟠 🟢 🔴 🔵 ✨ 🧠 👍 🎉
+    </div>
+
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center mb-8">Rubik's Cube Solution Guide</h1>
+        <p class="text-center mb-8">Let's learn to solve the 3x3 Rubik's Cube, layer by layer! ✨</p>
+
+        <div id="guide-content">
+            </div>
+
+        <div class="navigation">
+            <button id="prev-step" class="nav-button" disabled>Previous Step</button>
+            <button id="next-step" class="nav-button">Next Step</button>
+        </div>
+    </div>
+
+    <div class="timeline" id="timeline">
+        </div>
+
+    <div class="footer-text">
+        Made by Zayed A
+    </div>
+
+    <script>
+        const guideContent = document.getElementById('guide-content');
+        const prevButton = document.getElementById('prev-step');
+        const nextButton = document.getElementById('next-step');
+        const timeline = document.getElementById('timeline');
+        let currentStepIndex = 0;
+
+        // Define the steps based on the PDF content
+        const steps = [
+             {
+                title: "Intro & Get to Know Your Cube! 👋",
+                content: `
+                    <p>Welcome to the fun world of Rubik's Cubes! 🎉 You'll learn the awesome layered method to solve the 3x3 cube!</p>
+                    <h3 class="text-xl font-semibold mt-4">Layers, Faces, Centers, Edges, Corners 🧩</h3>
+                    <p>Your cube has three horizontal layers: Top, Middle, and Bottom.</p>
+                    <p>There are 6 faces, each with a special letter: U (Up), D (Down), L (Left), R (Right), F (Front), B (Back).</p>
+                    <p>Center pieces have one color and stay put! Edge pieces have two colors (12 total) and Corner pieces have three colors (8 total).</p>
+                    <p>Cool fact: Opposite colors are always together! ⚪-🟡, 🔵-🟢, 🟠-🔴.</p>
+                    <h3 class="text-xl font-semibold mt-4">Algorithm Key & Motions 🔄</h3>
+                    <p>Each move is just a little turn (1/4 turn). An algorithm is a super helpful sequence of moves!</p>
+                    <p>A letter (like F) means turn that face clockwise!</p>
+                    <p>A letter with an apostrophe (like F') means turn it counter-clockwise!</p>
+                    <p>A letter with a '2' (like F2) means give it a double turn (180 degrees)!</p>
+                    <p>Keep your FRONT face facing you when doing an algorithm! 😉</p>
+                `
+            },
+            {
+                title: "Layer One: Step 1 - Create a Daisy! 🌼",
+                content: `
+                    <p>Hold your cube with the bright YELLOW CENTER piece on the very top (UP face).</p>
+                    <p>Your first mission: Get four WHITE EDGE pieces around the YELLOW center to make a beautiful daisy! 🌸</p>
+                    <h4 class="font-semibold mt-3">Action 1: Top Layer Edges</h4>
+                    <p>Spot any WHITE EDGE pieces already chilling in the top layer? Leave 'em there!</p>
+                    <h4 class="font-semibold mt-3">Action 2: Middle Layer Edges</h4>
+                    <p>Find WHITE EDGE pieces in the middle layer? Let's move them up to the top layer!</p>
+                    <div class="tip">
+                        <strong>Pro Tip! ✨</strong> Don't accidentally knock out the white edges already in your daisy! Give the UP (U) face a little turn to move a white edge out of the way before bringing another one up!
+                    </div>
+                    <h4 class="font-semibold mt-3">Action 3: Bottom Layer Edges</h4>
+                    <p>See any WHITE EDGE pieces down in the bottom layer? Bring them up to the top layer too!</p>
+                    <p>Example move to bring one up: <code class="algorithm">F2</code> (turn the front face twice!)</p>
+                     <div class="tip">
+                        <strong>Another Tip! 💡</strong> Sometimes a white edge is up top but the white sticker isn't facing up! It needs a "flip"! Hold the cube so this edge is on the RIGHT (R) face and do this little dance: <code class="algorithm">R' U F'</code>
+                    </div>
+                `
+            },
+            {
+                title: "Layer One: Step 2 - White Cross with Matches! ➕⚪",
+                content: `
+                    <p>Keep your daisy on the UP (U) face.</p>
+                    <p>Now, let's make that white cross perfect! Match the non-white color of each white edge piece with the center piece on the side faces!</p>
+                    <h4 class="font-semibold mt-3">Action 1: Match Edge to Center Color</h4>
+                    <p>Look at the edge piece on the FRONT face (the one on the UP layer). Does its front color match the color of the FRONT center piece? If yes, go to Action 2!</p>
+                    <p>If not, just turn the UP (U) face until it *does* match! 👍</p>
+                    <h4 class="font-semibold mt-3">Action 2: Send it Down!</h4>
+                    <p>Once the FRONT edge color matches the FRONT center color, turn the FRONT face two times (<code class="algorithm">F2</code>)! This sends the white edge piece down to the bottom (DOWN face) to join the white cross!</p>
+                    <h4 class="font-semibold mt-3">Action 3 & 4: Repeat & Flip!</h4>
+                    <p>Do Actions 1 & 2 for all four white edge pieces!</p>
+                    <p>Once they're all in place on the bottom, flip your whole cube over! Now the white cross should be on the DOWN face, and YELLOW is on the UP face! Yay! 🎉</p>
+                `
+            },
+            {
+                title: "Layer One: Step 3 - Solve the White Corners! ⬜️",
+                content: `
+                    <p>Hold your cube with the beautiful white cross on the DOWN (D) face (Yellow is UP).</p>
+                    <p>Time to place those white corner pieces in their happy homes in the bottom layer!</p>
+                    <h4 class="font-semibold mt-3">Action 1: Find a White Corner</h4>
+                    <p>Look around the top layer (UP face) for any corner piece that has a WHITE sticker!</p>
+                     <div class="tip">
+                        <strong>Helper Tip! ✨</strong> If your white corner piece is in the top layer but in the wrong spot then see the tip below. To get a corner with a white tile from the top layer to the bottom layer: Hold the cube with that corner on the RIGHT face and perform: <code class="algorithm">R' D' R</code>. Then look for it in the bottom layer for Action 1!
+                    </div>
+                    <h4 class="font-semibold mt-3">Action 2: Position Below its Home</h4>
+                    <p>Turn the DOWN (D) face until the white corner piece you found in Action 1 is directly underneath where it *should* go in the bottom layer. How do you know where it should go? The other two colors on the corner piece should match the colors of the two center pieces next to its spot!</p>
+                    <h4 class="font-semibold mt-3">Action 3: Get White Facing Front or Right!</h4>
+                    <p>Keeping the white cross on the DOWN face, hold your cube so the corner piece you're working on is in the front-right-bottom position.</p>
+                    <p>Is the WHITE sticker on the FRONT face? Use the "Moving Left" algorithm in Action 4!</p>
+                    <p>Is the WHITE sticker on the RIGHT face? Use the "Moving Right" algorithm in Action 4!</p>
+                     <div class="tip">
+                        <strong>Sticker Stuck Down? 🤔</strong> If the WHITE sticker is on the BOTTOM face, you need to bring it to the front or right first! Hold the cube with the corner on the RIGHT face and do: <code class="algorithm">F D' F' D2</code> (D2 is two D turns!). Then go back to Action 3!
+                    </div>
+                     <h4 class="font-semibold mt-3">Action 4: Pop it In!</h4>
+                    <p><strong>If WHITE sticker is on the FRONT:</strong> Hold the cube so the corner is in the front-right-bottom spot. Follow this fun algorithm:</p>
+                    <code class="algorithm">D L D' L'</code>
+                    <p><strong>If WHITE sticker is on the RIGHT:</strong> Hold the cube so the corner is in the front-right-bottom spot. Follow this algorithm:</p>
+                    <code class="algorithm">D' R' D R</code>
+                    <h4 class="font-semibold mt-3">Action 5: Keep Going!</h4>
+                    <p>Repeat Actions 1-4 until all the white corner pieces are in their correct places! Woohoo! You've solved the first layer! 🎉</p>
+                `
+            },
+             {
+                title: "Solve the Middle Layer! 🟩🟧🟦🟥",
+                content: `
+                    <p>Flip your cube over so your beautiful completed WHITE face is now the DOWN face (Yellow is UP)!</p>
+                    <p>Your next goal: Get those edge pieces into the middle layer where they belong!</p>
+                     <h4 class="font-semibold mt-3">Action 1: Make a Matching Line!</h4>
+                    <p>Pick a FRONT face. Turn the UP (U) face until the edge piece on the FRONT face (the one on the UP layer) has its front sticker color matching the color of the FRONT center piece! You'll see a vertical line of the same color!</p>
+                     <div class="tip">
+                        <strong>Can't Make a Line? 🤔</strong> Sometimes a middle layer edge piece is in the wrong spot and needs to be moved out first! Look in the MIDDLE layer for an edge that doesn’t have yellow but is in the wrong place. Hold your Rubik’s Cube so the mismatched edge in the middle layer is on the RIGHT face. Follow the algorithm ‘Moving Right’ on page 26. Now proceed to Action 1 on page 23.
+                    </div>
+                     <h4 class="font-semibold mt-3">Action 2: Send the Edge Home!</h4>
+                    <p>Look at the *top* sticker color of the edge piece you just aligned in Action 1. This color tells you if the edge needs to go to the LEFT or RIGHT side face!</p>
+                    <p><strong>Moving Left:</strong> If the top sticker color matches the LEFT center color, it's going LEFT! Do this algorithm:</p>
+                    <code class="algorithm">U' L' U L  U F U' F'</code>
+                    <p><strong>Moving Right:</strong> If the top sticker color matches the RIGHT center color, it's going RIGHT! Do this algorithm:</p>
+                    <code class="algorithm">U R U' R'  U' F' U F</code>
+                     <h4 class="font-semibold mt-3">Action 3: Keep Placing!</h4>
+                    <p>Keep doing Actions 1-2 until all the edge pieces in the middle layer are in their correct spots! You've now solved the first *two* layers! Amazing! 🥳</p>
+                `
+            },
+             {
+                title: "Final Layer: Step 1 - Yellow Cross! ➕🟡",
+                content: `
+                    <p>Hold your cube with the solved two layers on the bottom (YELLOW is UP!).</p>
+                    <p>Your mission now: Create a yellow cross on the UP face! Look at the yellow stickers on the top edge pieces. You might see just the center, a little 'L' shape, or a horizontal line.</p>
+                    <h4 class="font-semibold mt-3">Action 1: The Yellow Cross Algorithm!</h4>
+                    <p>Match the yellow pattern on your cube's top face to the pictures in the PDF. If you have the 'L', make sure it's in the top-left corner! If you have the line, hold it horizontally!</p>
+                    <p>Now, do this special algorithm:</p>
+                    <code class="algorithm">F U R U' R' F'</code>
+                     <div class="tip">
+                        <strong>Easy Chant! 🎶</strong> Remember this as "FUR, U R prime, F prime"!
+                    </div>
+                    <h4 class="font-semibold mt-3">Action 2: Repeat if Needed!</h4>
+                    <p>After the algorithm, check the yellow face! Is the yellow cross there? If not, look at the new pattern on the yellow face, re-orient your cube if necessary, and do the algorithm again! You might need to do it up to three times!</p>
+                    <p>Once you have a yellow cross on the UP face, you're ready for the next step! 👍</p>
+                `
+            },
+             {
+                title: "Final Layer: Step 2 - Orient the Corners! ✨",
+                content: `
+                    <p>Keep your yellow cross on the UP face!</p>
+                    <p>Now, let's get *all* the yellow stickers on the UP face! Your corner pieces might have yellow on the top, front, or side.</p>
+                    <h4 class="font-semibold mt-3">Action 1: The Corner Orienting Algorithm!</h4>
+                    <p>Hold your cube so that the yellow corner patterns on the UP face match one of the positions described in the PDF (no yellow corners on top, one yellow corner on top, or two yellow corners on top). The PDF provides specific ways to hold the cube for each case (e.g., "Feed the fish"!).</p>
+                    <p>Now, perform this algorithm:</p>
+                    <code class="algorithm">R U R' U R U2 R'</code>
+                     <div class="tip">
+                        <strong>Chant Time! 🎶</strong> Try this: "R up, U, R prime, U, R up, U2, R prime"!
+                    </div>
+                    <h4 class="font-semibold mt-3">Action 2: Keep Going!</h4>
+                    <p>After the algorithm, check the yellow face! Are all the yellow stickers on top now? If not, look at the new yellow corner pattern, re-orient your cube, and do the algorithm again! You might need to repeat this a few times!</p>
+                    <p>Once all the yellow stickers are happily on the UP face, you're super close! Move on! 😎</p>
+                `
+            },
+             {
+                title: "Final Layer: Step 3 - Position the Yellow Corners! 🎯",
+                content: `
+                    <p>Hold your cube with the fully yellow face on the UP face!</p>
+                    <p>Your goal now is to get the yellow corner pieces into their *correct positions* around the cube, even if they look twisted!</p>
+                    <h4 class="font-semibold mt-3">Action 1: Find Correct Corners!</h4>
+                    <p>Give the UP (U) face a few twists! See if you can get at least two corner pieces into their correct spots! A corner is correct if its side colors match the colors of the center pieces next to it on the middle layer.</p>
+                    <p>What did you find? 🤔</p>
+                    <ul>
+                        <li>Two corners next to each other are correct (Adjacent).</li>
+                        <li>Two corners across from each other are correct (Diagonal).</li>
+                        <li>All four corners are correct (Awesome! Skip to Step 4!).</li>
+                        <li>No corners are correct (That's okay! Do the algorithm below from any angle, then check again!).</li>
+                    </ul>
+                     <h4 class="font-semibold mt-3">Action 2: Hold it Right!</h4>
+                    <p>If two *adjacent* corners are correct, hold your cube so these two correct corners are on the BACK face (like "tail lights" on a car! 🚗).</p>
+                    <p>If two *diagonal* corners are correct, hold your cube with one correct corner in the front-right position.</p>
+                     <h4 class="font-semibold mt-3">Action 3: The Corner Positioning Algorithm!</h4>
+                    <p>Ready? Do this algorithm:</p>
+                    <code class="algorithm">R2 U R' F R' B2 R F' R' B2 R2</code>
+                     <div class="tip">
+                        <strong>Chant Power! 💪</strong> "R2, U, R prime, F, R prime, B2, R, F prime, R prime, B2, R2"!
+                    </div>
+                    <h4 class="font-semibold mt-3">Action 4: Check and Repeat!</h4>
+                    <p>After the algorithm, are all four yellow corners in their correct spots? If not, look at which ones are correct now (adjacent or diagonal), re-orient your cube, and repeat the algorithm!</p>
+                    <p>Once all four yellow corners are in their correct places, you're SO close! On to the final step! 👇</p>
+                `
+            },
+             {
+                title: "Final Layer: Step 4 - Position the Yellow Edges! ✅",
+                content: `
+                    <p>Hold your cube with the fully yellow face on the UP face!</p>
+                    <p>This is it! The final step! Let's move those last yellow edge pieces into their correct positions to solve the whole cube! 🎉</p>
+                    <h4 class="font-semibold mt-3">Action 1: Hold & Algorithm Time!</h4>
+                    <p>Hold your Rubik’s Cube so the one face that is a solid color is the BACK, and the Yellow face is the UP (U) face. If no face is a solid color, it doesn’t matter which face is in the back.</p>
+                    <p>Before starting the algorithm, look at the unsolved edge on the FRONT face. Is it the same color as the center tile of the LEFT face? Follow the algorithm to move edges CLOCKWISE / TO THE LEFT. Is it the same color as the center tile of the RIGHT face? Change the two U turns to U’ in the algorithm below to move edges COUNTER-CLOCKWISE / TO THE RIGHT.</p>
+                    <p><strong>To move edges CLOCKWISE / TO THE LEFT:</strong> Use this algorithm:</p>
+                    <code class="algorithm">R2 U R U R' U' R' U' R' U R'</code>
+                     <div class="tip">
+                        <strong>Chant It! 🎤</strong> "R2, U, R, U, R prime, U prime, R prime, U prime, R prime, U, R prime"!
+                    </div>
+                     <p><strong>To move edges COUNTER-CLOCKWISE / TO THE RIGHT:</strong> You'll use almost the same algorithm, but change the two U turns to U'! Like this:</p>
+                     <code class="algorithm">R2 U' R U' R' U R' U R' U' R'</code>
+                     <div class="tip">
+                        <strong>Chant It! 🎤</strong> "R2, U prime, R, U prime, R prime, U, R prime, U, R prime, U prime, R prime"!
+                    </div>
+                    <h4 class="font-semibold mt-3">Action 2: Finish Line!</h4>
+                    <p>You might need to perform the appropriate algorithm (clockwise or counter-clockwise) up to 3 times. If you need to repeat, make sure any solved face (if you have one now!) is still in the BACK!</p>
+                    <p>Once all the yellow edges click into place... guess what?!</p>
+                `
+            },
+             {
+                title: "YOU DID IT! CONGRATULATIONS! 🎉🥳",
+                content: `
+                    <p class="text-center text-2xl font-bold text-green-700">YOU HAVE SOLVED THE RUBIK'S CUBE!</p>
+                    <p class="text-center mt-4">Give yourself a big pat on the back! You persevered and conquered the cube! 💪🧠</p>
+                    <p class="text-center mt-4">Keep practicing these steps and algorithms to get faster! You can do it!</p>
+                    <p class="text-center mt-4">You can find more cool resources and videos on Rubiks.com!</p>
+                    <p class="text-center mt-4">Happy Cubing! cube 🧩</p>
+                `
+            }
+        ];
+
+        // Function to create timeline dots
+        function createTimelineDots() {
+            timeline.innerHTML = ''; // Clear existing dots
+            for (let i = 0; i < steps.length; i++) {
+                const dot = document.createElement('span');
+                dot.classList.add('timeline-dot');
+                dot.dataset.index = i; // Store the step index
+                dot.addEventListener('click', () => {
+                    loadStep(i); // Allow clicking dots to jump to steps
+                });
+                timeline.appendChild(dot);
+            }
+        }
+
+        function loadStep(index) {
+            if (index >= 0 && index < steps.length) {
+                const step = steps[index];
+                guideContent.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-4">${step.title}</h2>
+                    ${step.content}
+                `;
+                currentStepIndex = index;
+                updateNavigationButtons();
+                updateTimelineDots(); // Update the timeline highlighting
+                window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top on step change
+            }
+        }
+
+        function updateNavigationButtons() {
+            prevButton.disabled = currentStepIndex === 0;
+            nextButton.disabled = currentStepIndex === steps.length - 1;
+        }
+
+        // Function to update which timeline dot is active
+        function updateTimelineDots() {
+            const dots = timeline.querySelectorAll('.timeline-dot');
+            dots.forEach((dot, index) => {
+                if (index === currentStepIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        prevButton.addEventListener('click', () => {
+            loadStep(currentStepIndex - 1);
+        });
+
+        nextButton.addEventListener('click', () => {
+            loadStep(currentStepIndex + 1);
+        });
+
+        // Initialize timeline dots and load the first step
+        createTimelineDots();
+        loadStep(0);
+    </script>
+</body>
+</html>
